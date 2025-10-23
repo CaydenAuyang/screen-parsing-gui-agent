@@ -1,186 +1,103 @@
-# Screen-Parsing-GUI-Agent-
+# 🧠 Screen Parsing GUI Agent
 
-Screen Parsing GUI Agent Functionality, Possibilities, Limitations and Code
+A macOS-based, window-targeted **GUI automation agent** that combines **computer vision (YOLO + OCR)** with **LLM reasoning** to perform autonomous, goal-driven interactions across arbitrary apps and websites.
 
-1. What This Code Is & What It Does
-This is a macOS-based, window-targeted GUI automation agent that:
-“Screen Parsing” - Locates on-screen text and icons via a YOLO-based detector and PaddleOCR.
+---
 
+## 🚀 1. What This Code Is & What It Does
 
-Plans high-level multi-step goals (open application, open website, extract information, play song, add to cart, type, create document, etc.) with an LLM (OpenAI).
+This project implements a **vision + LLM-based automation agent** that can:
 
+- **See:** Locate on-screen text and icons using YOLOv8 (for icon detection) and PaddleOCR (for text extraction).  
+- **Think:** Use an OpenAI LLM (GPT-based) to plan and replan multi-step tasks like:  
+  * opening applications  
+  * visiting websites  
+  * extracting data  
+  * typing or clicking buttons  
+  * adding to cart  
+  * creating documents  
+- **Act:** Execute generic actions (`click`, `type`, `scroll`, `reach_target`) by matching OCR’d labels or detected icons.  
+- **Recover:** Backtrack (Esc/back) and replan when stuck.  
+- **Learn:** Store “experience” and “penalty” memories to remember what worked and what didn’t.  
+- **Verify:** Confirm successful outcomes with URL/text heuristics and a final LLM-based post-check.  
 
-Executes generic actions (click, type, scroll, reach_target) by matching OCR’d labels or icon boxes.
+---
 
+## 🧩 2. Core Technologies
 
-Falls back to DOM clicks via Selenium/JavaScript if vision clicks don’t register.
+| Area | Technologies Used |
+|------|--------------------|
+| **Computer Vision & OCR** | Ultralytics YOLOv8 (icon detection), PaddleOCR (text recognition) |
+| **LLM Planning & Reflex** | OpenAI Chat API (configurable GPT models for macro/micro planning) |
+| **macOS Automation** | AppleScript (focus/query apps/tabs), `pyautogui` / `pynput` + `mss` |
+| **Browser Automation** | Selenium WebDriver (ChromeDriver) + JavaScript DOM click fallback |
+| **State Management** | SHA1 UI fingerprints + JSON-based memory for successes/failures |
 
+---
 
-Backtracks and re-plans when stuck—presses Esc/back, asks the LLM for an alternate strategy.
+## ⚙️ 3. Improvements Over OmniTool
 
+| Capability | OmniTool | This Agent |
+|-------------|-----------|-------------|
+| Goal-driven planning | Basic one-step LLM prompts | Multi-step LLM planner + adaptive reflexor |
+| Vision-first interaction | Screenshot parsing only | YOLOv8 + PaddleOCR unified parsing |
+| Cookie-banner handling | ❌ None | ✅ Auto “Accept All” via vision match |
+| DOM fallback | ❌ Vision-only | ✅ Selenium/JS click fallback |
+| Loop avoidance | ❌ None | ✅ Fingerprint + penalty memory |
+| Backtracking | ❌ No recovery | ✅ Esc/back + dynamic replan |
+| Experience memory | ❌ Stateless | ✅ Bandit-style per-domain scoring |
+| Runtime toggles | ❌ Fixed | ✅ CLI flags for Chrome reuse, remote debug, etc. |
 
-Remembers what worked (and what failed) per domain with lightweight “experience” and “penalty” memories.
+**Description:**  
+Building on OmniTool’s OmniParser V2 (YOLOv8 + Florence-2), this agent replaces Florence captioning with PaddleOCR for fast, on-device text extraction.  
+It features a **two-tier LLM system** — GPT-4 for high-level plans and a low-latency reflex model for micro-actions — all under a feedback-driven memory system.  
+Adaptive backtracking, proactive cookie handling, Chrome reuse, and AppleScript-based window targeting make it a leaner, macOS-native automation framework.
 
+---
 
-Verifies success by URL/text heuristics and even does a final LLM-based post-check.
+## 🔁 4. Key Additions & Smart Logic Flows
 
+- **PenaltyMemory & ExperienceMemory** → bias toward successful labels; avoid known failures.  
+- **Dynamic `reach_target`** → LLM builds target lexicon, exposure controls, and success/URL hints.  
+- **Reflexor** → micro-step LLMs vote on next action when heuristics stall.  
+- **Adaptive Backtracking** → detect no-UI-change → trigger Esc/back + replan.  
+- **Final LLM Post-Check** → confirms task success (“Did we really add to cart?”).  
+- **Chrome Handling** → attach to existing session or open a new tab via remote debug.
 
+---
 
-2. Core Technologies
-Computer Vision & OCR
+## ⚠️ 5. Limitations & Known Issues
 
+- **OCR errors** on small/low-contrast/custom fonts.  
+- **LLM inconsistency** — may hallucinate or generalize excessively.  
+- **Site variability** — custom controls, CAPTCHAs, dynamic loaders.  
+- **Timing issues** — can click too early or through modals.  
+- **Loop risks** — fingerprinting mitigates but doesn’t eliminate stuck loops.  
+- **macOS permissions** — requires Accessibility & Screen Recording access + Chrome debug flags.
 
-Ultralytics YOLOv8 for generic icon hitboxes
+---
 
+## 🌍 6. Why This Matters
 
-PaddleOCR for reading on-screen text
+This project bridges **vision-based UI parsing** and **LLM reasoning**, a crucial step toward **app-agnostic automation**.
 
+The agent:
+- **Thinks:** plans, evaluates, and replans.  
+- **Sees:** reads any on-screen text or icon.  
+- **Acts:** performs generic UI actions via OCR, DOM, or inferred affordances.  
+- **Learns:** improves over time with success/failure memory.
 
-LLM Planning & Reflex
+> ⚡ It’s still experimental — accuracy and consistency vary — but it demonstrates the future of flexible, autonomous GUI agents.
 
+---
 
-OpenAI Chat API (configurable models) for both macro-planning and micro-step suggestions
+## 🧱 7. Quick Setup & Dependencies
 
+### Requirements
+- macOS  
+- Python **3.8+**  
+- Chrome + matching **ChromeDriver**
 
-macOS Automation
-
-
-AppleScript (osascript) for focusing or querying apps/tabs
-
-
-pyautogui / pynput + mss for mouse/keyboard and screenshots
-
-
-Browser Automation
-
-
-Selenium WebDriver (ChromeDriver) + JavaScript DOM clicks
-
-
-State Management
-
-
-SHA1 fingerprints to detect UI change and avoid loops
-
-
-Tiny JSON-backed memory for successes and failures
-
-
-
-3. Improvements Over GitHub OmniTool
-Capability
-OmniTool
-This Agent
-Goal-driven planning
-Basic one-step LLM proposals (no multi-step plan scoring)
-LLM-based planner + reflexor that adapts on the fly with multi-sample voting
-Vision-first interaction
-✅ Screenshot-only parsing (custom icon detector + captioning)
-✅ YOLO icon detection + PaddleOCR → unified text + icon UI parsing
-Cookie-banner handling
-❌ None
-✅ Proactive “Accept all” via vision match
-DOM fallback
-❌ Relies purely on vision
-✅ Optional Selenium/JS click when OCR misses
-Loop avoidance
-❌ No mechanism
-✅ Fingerprint comparison + penalty memory
-Backtracking
-❌ No built-in recovery
-✅ Esc/back + dynamic LLM re-planning
-Experience memory
-❌ Stateless
-✅ Bandit-style scoring per domain → prefers labels that worked before
-Runtime toggles
-❌ Fixed behavior
-✅ CLI flags for reusing Chrome tabs, pasting links in-place, remote-debug
-
-
-Description
-Building on OmniTool’s integration of OmniParser V2—which pairs a YOLOv8-based detection module with Florence-2 captioning to identify and semantically label UI elements—the tool substitutes PaddleOCR for lightweight, on-device text extraction alongside the same YOLOv8 icon detector. It introduces a two-tiered OpenAI LLM architecture (GPT-4 for high-level planning and a lower-latency reflex model for micro-step actions) wrapped in a feedback-driven memory system that rewards successful UI interactions and penalizes failed attempts. Adaptive backtracking (Esc/back navigation and LLM-guided replanning), proactive cookie-banner dismissal, and a generic, LLM-driven reach_target algorithm allow it to navigate arbitrary macOS apps without site-specific hacks. Deep AppleScript integration for window targeting and optional Chrome remote-debug reuse replaces the need for Dockerized Windows VMs, yielding a leaner, more responsive local agent. These enhancements deliver greater flexibility and autonomy—while acknowledging the inherent OCR/LLM accuracy trade-offs and occasional inconsistencies.
-
-
-
-
-4. Key Additions & Smart Logic Flows
-PenaltyMemory & ExperienceMemory to bias toward successful labels and avoid repeats of failures
-
-
-Dynamic “reach_target”: builds a lexicon of targets, exposure controls, success_text and URL hints via LLM
-
-
-LLM-driven micro-steps (Reflexor) that vote on next clicks when generic heuristics stall
-
-
-Adaptive backtracking: on no UI change → press Esc/back and ask LLM for an alternative click
-
-
-Final LLM post-check: verifies end state (“did we really add-to-cart?”) and prints boxed feedback
-
-
-Flexible Chrome handling: can attach to an existing window via remote debugging or open new one
-
-
-
-
-5. Limitations & Known Issues
-OCR/Detection errors: small text, low contrast or custom fonts may be missed or mis-read
-
-
-LLM inconsistency: occasional hallucinations or overly generic token suggestions
-
-
-Site variability: some sites use non-standard controls, dynamic loading, or require captcha/login
-
-
-Timing & animations: hard to tune waits for every UI; sometimes clicks “through” modals or too early
-
-
-Not bullet-proof: still can get stuck in loops or miss the exact “Buy” vs. “Customize” step without clarification
-
-
-Permissions: requires macOS Accessibility & Screen Recording permissions, plus Chrome remote-debug flags
-
-
-
-6. Why This Matters Today
-Bridging vision-based UI parsing (YOLO + OCR) with LLM reasoning is a promising step toward truly app-agnostic automation. Rather than brittle, per-site scripts, this agent:
-Thinks: plans and replans with context
-
-
-Sees: extracts all visible labels and icons
-
-
-Acts: chooses generically via OCR, DOM or LLM affordance inference
-
-
-Learns: adapts to domains over time
-
-
-It’s not production-ready—accuracy and consistency vary—but it demonstrates how combining CV and LLMs can move the needle on autonomous GUI agents in 2025.
-
-7. Quick Dependencies & Setup
-Python 3.8+
-
-
-pip install:
- pip install openai ultralytics torch paddlepaddle paddleocr numpy pillow mss pynput pyautogui selenium
-Chrome & ChromeDriver (matching versions)
-
-
-Environment vars:
-
-
-OPENAI_API_KEY
-optional: YOLO_WEI
-GHTS, OPENAI_MODEL_PLANNER, etc.
-
-Recommended Tools
-Editor: Sublime Text (or any code editor)
-
-
-Runner: macOS Terminal (with Accessibility & Screen Recording permissions granted)
-
-
-This agent represents a next-generation prototype—not a polished product—but it highlights the potential of melding computer vision with generative AI for flexible, adaptive UI automation.
+### Install
+```bash
+pip install openai ultralytics torch paddlepaddle paddleocr numpy pillow mss pynput pyautogui selenium
